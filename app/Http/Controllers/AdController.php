@@ -6,13 +6,9 @@ use App\Models\Ad;
 use App\Models\Branch;
 use App\Models\Images;
 use App\Models\Status;
-use Faker\Factory;
-use Faker\Provider\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
 use JetBrains\PhpStorm\NoReturn;
-use PHPUnit\TextUI\Application;
 
 class AdController extends Controller
 {
@@ -49,7 +45,7 @@ class AdController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    #[NoReturn] public function store(Request $request)
+    public function store(Request $request)
     {
 
         $request->validate([
