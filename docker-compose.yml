@@ -3,7 +3,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: rent_app
+        container_name: app
         restart: unless-stopped
         volumes:
             - .:/var/www
@@ -29,7 +29,7 @@ services:
 
     pgadmin:
         image: dpage/pgadmin4
-        container_name: rent_pgadmin
+        container_name: pgadmin
         restart: unless-stopped
         environment:
             PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
@@ -40,10 +40,10 @@ services:
             - app-network
             
     web:
-        container_name: rent_web
+        container_name: web
         image: nginx:alpine  # Use the Nginx image
         ports:
-            - "80:80"  # Map port 9000 on the host to port 80 inside the container
+            - "81:80"  # Map port 9000 on the host to port 80 inside the container
         volumes:
             - .:/var/www  # Mount the Laravel application directory
             - ./nginx.conf:/etc/nginx/conf.d/default.conf  # Use our Nginx config
