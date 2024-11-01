@@ -47,7 +47,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             set -e
-            cd online_store
+            cd rent_app
             git reset --hard HEAD
             git pull
             docker compose -f docker-compose.production.yml up --build -d
