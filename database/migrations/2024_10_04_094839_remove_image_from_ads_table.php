@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ads', function (Blueprint $table) {
-            //
+            $table->string('gender')->check("gender in ('male', 'female')")->nullable(false);
         });
     }
 };
