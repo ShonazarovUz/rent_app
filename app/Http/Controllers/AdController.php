@@ -3,43 +3,40 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ad;
+use App\Models\AdImage;
 use App\Models\Branch;
-use App\Models\Images;
 use App\Models\Status;
 use Illuminate\Http\Request;
+use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Storage;
-use JetBrains\PhpStorm\NoReturn;
+use phpDocumentor\Reflection\DocBlock\Tags\InvalidTag;
 
 class AdController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(
+    ): \Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
+        $userId   = auth()->id();
+        $branches = Branch::all();
 
-            $branches=Branch::all();
-            $userId = auth()->id();
-            $ads = Ad::query()->withCount([
-               'bookmarkedByUsers as bookmarked' => function ($query) use ($userId) {
+        $ads = Ad::query()->withCount([
+            'bookmarkedByUsers as bookmarked' => function ($query) use ($userId) {
                 $query->where('user_id', $userId);
-               }
-            ])->get();
-            return view('ads.index' ,compact('branches','ads'));
+            }
+        ])->get();
+        return view('ads.index', ['ads' => $ads, 'branches' => $branches]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory
+    public function create(
+    ): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
     {
-
-        $action = route('ads.store');
-        $branches = Branch::all();
-        $ads=Ad::all();
-        $ad=new Ad();
-        return view('ads.create', compact('action','ads','branches','ad'));
-
+        return view('ads.create');
     }
 
     /**
@@ -47,33 +44,29 @@ class AdController extends Controller
      */
     public function store(Request $request)
     {
-
         $request->validate([
-            'title' => 'required | min:5',
+            'title'       => 'required|min:5',
             'description' => 'required',
-            'image'=>'mimes:jpg,jpeg,png,gif,svg|max:2048',
-        ],[
-            'title'=>['required' => 'Titlini kiritish majburiy'],
-            'description' => ['required' => 'Izoh kiritish majburiy'],
+            'image'       => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
+            'title' => ['required' => 'Iltimos, sarlavhani kiriting!'],
         ]);
 
         $ad = Ad::query()->create([
-            'title' => $request->input("title"),
-            'description' => $request->input("description"),
-            'users_id'=> auth()->id(),
-            'statuses_id' => Status::ACTIVE,
-            'address' => $request->input("address"),
-            'branches_id' => $request->input("branch_id"),
-            'price' => $request->input("price"),
-            'rooms' => $request->input("rooms"),
-             'gender'=>$request->input("gender")
-
+            'title'       => $request->get('title'),
+            'description' => $request->get('description'),
+            'address'     => $request->get('address'),
+            'branch_id'   => $request->get('branch_id'),
+            'user_id'     => auth()->id(),
+            'status_id'   => Status::ACTIVE,
+            'price'       => $request->get('price'),
+            'rooms'       => $request->get('rooms'),
         ]);
 
         if ($request->hasFile('image')) {
             $file = Storage::disk('public')->put('/', $request->image);
 
-            Images::query()->create([
+            Ad::query()->create([
                 'ad_id' => $ad->id,
                 'name'  => $file,
             ]);
@@ -82,14 +75,13 @@ class AdController extends Controller
         return redirect(route('home'))->with('message', "E'lon yaratildi");
     }
 
-
     /**
-     * Display the specified resource.
+     * Display the specified resource
      */
-    public function show(string $id): \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory
+    public function show(string $id)
     {
-        $ad = Ad::with('branch')->find($id);
-        return view('components.single-ad', ['ad'=>$ad]);
+        $ad = Ad::query()->find($id);
+        return view('ads.show', ['ad' => $ad]);
     }
 
     /**
@@ -116,36 +108,10 @@ class AdController extends Controller
         //
     }
 
-
-
-    public function find(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
+    public function search(Request $request)
     {
-        $searchPhrase = $request->input('search_phrase');
-        $branchId = $request->input('branches_id');
-        $minPrice = $request->input('min_price');
-        $maxPrice = $request->input('max_price');
-        $ads = Ad::query();
-        if ($searchPhrase) {
-            $ads->where('title', 'like', '%' . $searchPhrase . '%');
-        }
-        if ($branchId) {
-            $ads->where('branches_id', $branchId);
-        }
-        if ($minPrice) {
-            $ads->where('price', '>=', $minPrice);
-        }
-        if ($maxPrice) {
-            $ads->where('price', '<=', $maxPrice);
-        }
-        $ads = $ads->with('branch')->get();
-        $branches = Branch::all();
-        return view('ads.index', compact('ads', 'branches'));
+        $branchId = $request->get('branch_id');
+        $result = Ad::query()->where('branch_id', $branchId)->get();
+        return response()->json($result ?? []);
     }
-
-
-  public function contact()
-  {
-      return view("components.contact");
-  }
-
 }
