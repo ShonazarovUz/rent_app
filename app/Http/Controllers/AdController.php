@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ad;
-use App\Models\AdImage;
 use App\Models\Branch;
 use App\Models\Status;
 use Illuminate\Http\Request;
-use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Storage;
-use phpDocumentor\Reflection\DocBlock\Tags\InvalidTag;
+
 
 class AdController extends Controller
 {

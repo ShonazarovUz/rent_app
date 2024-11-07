@@ -33,8 +33,7 @@
                 </ul>
             </div>
 
-            <x-ad-form :action="$action" />
-
+    
 
         </div>
     </div><!--end container-->
